@@ -4,7 +4,13 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:1.3.5.RELEASE")
+        classpath("net.sourceforge.jtds:jtds:1.3.1")
     }
+}
+
+// from: https://plugins.gradle.org/plugin/org.flywaydb.flyway
+plugins {
+    id "org.flywaydb.flyway" version "4.0.3"
 }
 
 apply plugin: 'java'
@@ -12,8 +18,9 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'spring-boot'
 
+
 jar {
-    baseName = 'gs-serving-web-content'
+    baseName = 'SpringShell'
     version = '0.1.0'
 }
 
@@ -32,4 +39,12 @@ dependencies {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.3'
+}
+
+// assumes SQL Server 2014 is installed with the SpringShell database already created
+// also assumes the ntmlauth.dll from the jtds distro is copied to the JDK bin http://stackoverflow.com/questions/13267764/i-o-error-sso-failed-native-sspi-library-not-loaded
+// todo: create the database via gradle
+// todo: deploy the dll via gradle
+flyway {
+    url = 'jdbc:jtds:sqlserver://localhost/SpringShell'
 }
