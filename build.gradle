@@ -48,3 +48,27 @@ task wrapper(type: Wrapper) {
 flyway {
     url = 'jdbc:jtds:sqlserver://localhost/SpringShell'
 }
+
+// todo: introduce an environment config mechanism like https://github.com/marceloemanoel/gradle-environments-plugin
+task dropDatabase(type: Exec) {
+    commandLine 'sqlcmd',
+            '-S', 'localhost',
+            '-i', 'src\\main\\resources\\db\\utils\\drop_database.sql',
+            "-v",
+            "dbName=SpringShell"
+}
+
+task createDatabase(type: Exec){
+    // create the data directory
+    def dataPath = 'c:\\Sitka\\SpringShell\\Data'
+    def logDirBase = new File(dataPath)
+    logDirBase.mkdirs()
+
+    // run the create script
+    commandLine 'sqlcmd',
+            '-S', 'localhost',
+            '-i', 'src\\main\\resources\\db\\utils\\create_database.sql',
+            "-v",
+            "dbName=SpringShell",
+            "dataPath=\"${dataPath}\""
+}
