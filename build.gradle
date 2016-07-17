@@ -18,9 +18,18 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'spring-boot'
 
+/* --------------------------------------
+    application configuration properties
+   --------------------------------------
+ */
+def applicationName = 'SpringShell'
+def databaseName = applicationName
+// todo: introduce an environment config mechanism like https://github.com/marceloemanoel/gradle-environments-plugin
+def databaseServer = 'localhost'
+def applicationRoot = 'c:\\Sitka'
 
 jar {
-    baseName = 'SpringShell'
+    baseName = applicationName
     version = '0.1.0'
 }
 
@@ -41,34 +50,32 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.3'
 }
 
-// assumes SQL Server 2014 is installed with the SpringShell database already created
+// assumes SQL Server 2014 is installed
 // also assumes the ntmlauth.dll from the jtds distro is copied to the JDK bin http://stackoverflow.com/questions/13267764/i-o-error-sso-failed-native-sspi-library-not-loaded
-// todo: create the database via gradle
 // todo: deploy the dll via gradle
 flyway {
-    url = 'jdbc:jtds:sqlserver://localhost/SpringShell'
+    url = "jdbc:jtds:sqlserver://localhost/${applicationName}"
 }
 
-// todo: introduce an environment config mechanism like https://github.com/marceloemanoel/gradle-environments-plugin
 task dropDatabase(type: Exec) {
     commandLine 'sqlcmd',
-            '-S', 'localhost',
+            '-S', databaseServer,
             '-i', 'src\\main\\resources\\db\\utils\\drop_database.sql',
             "-v",
-            "dbName=SpringShell"
+            "dbName=${databaseName}"
 }
 
 task createDatabase(type: Exec){
     // create the data directory
-    def dataPath = 'c:\\Sitka\\SpringShell\\Data'
+    def dataPath = "${applicationRoot}\\${applicationName}\\Data"
     def logDirBase = new File(dataPath)
     logDirBase.mkdirs()
 
     // run the create script
     commandLine 'sqlcmd',
-            '-S', 'localhost',
+            '-S', databaseServer,
             '-i', 'src\\main\\resources\\db\\utils\\create_database.sql',
             "-v",
-            "dbName=SpringShell",
+            "dbName=${databaseName}",
             "dataPath=\"${dataPath}\""
 }
