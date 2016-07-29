@@ -54,9 +54,10 @@ task wrapper(type: Wrapper) {
 // also assumes the ntmlauth.dll from the jtds distro is copied to the JDK bin http://stackoverflow.com/questions/13267764/i-o-error-sso-failed-native-sspi-library-not-loaded
 // todo: deploy the dll via gradle
 flyway {
-    url = "jdbc:jtds:sqlserver://localhost/${applicationName}"
+    url = "jdbc:jtds:sqlserver://${databaseServer}/${databaseName}"
+    //microsoft jdbc style - url = "jdbc:sqlserver://${databaseServer};databaseName=${databaseName};integratedSecurity=true;"
 }
-
+//println java.lang.System.getProperty('java.library.path')
 task dropDatabase(type: Exec) {
     commandLine 'sqlcmd',
             '-S', databaseServer,
