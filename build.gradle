@@ -22,14 +22,16 @@ apply plugin: 'spring-boot'
     application configuration properties
    --------------------------------------
  */
-def applicationName = 'SpringShell'
-def databaseName = applicationName
 // todo: introduce an environment config mechanism like https://github.com/marceloemanoel/gradle-environments-plugin
+def databaseName = project.name
 def databaseServer = 'localhost'
-def applicationRoot = 'c:\\Sitka'
+def dataPath = new File('.data')
+
+println "**** Using java home ****"
+println System.properties.'java.library.path'
 
 jar {
-    baseName = applicationName
+    baseName = project.name
     version = '0.1.0'
 }
 
@@ -51,7 +53,8 @@ task wrapper(type: Wrapper) {
 }
 
 // assumes SQL Server 2014 is installed
-// also assumes the ntmlauth.dll from the jtds distro is copied to the JDK bin http://stackoverflow.com/questions/13267764/i-o-error-sso-failed-native-sspi-library-not-loaded
+// also assumes the ntmlauth.dll from the jtds distro is copied to the JDK bin
+// http://stackoverflow.com/questions/13267764/i-o-error-sso-failed-native-sspi-library-not-loaded
 // todo: deploy the dll via gradle
 flyway {
     url = "jdbc:jtds:sqlserver://${databaseServer}/${databaseName}"
@@ -61,22 +64,20 @@ flyway {
 task dropDatabase(type: Exec) {
     commandLine 'sqlcmd',
             '-S', databaseServer,
-            '-i', 'src\\main\\resources\\db\\utils\\drop_database.sql',
+            '-i', file('src/main/resources/db/utils/drop_database.sql'),
             "-v",
             "dbName=${databaseName}"
 }
 
 task createDatabase(type: Exec){
     // create the data directory
-    def dataPath = "${applicationRoot}\\${applicationName}\\Data"
-    def logDirBase = new File(dataPath)
-    logDirBase.mkdirs()
+    dataPath.mkdirs()
 
     // run the create script
     commandLine 'sqlcmd',
             '-S', databaseServer,
-            '-i', 'src\\main\\resources\\db\\utils\\create_database.sql',
+            '-i', file('src/main/resources/db/utils/create_database.sql'),
             "-v",
             "dbName=${databaseName}",
-            "dataPath=\"${dataPath}\""
+            "dataPath=\"${dataPath.getAbsolutePath()}\""
 }
